@@ -1,0 +1,121 @@
+#!/bin/bash
+
+#
+# See the following for details:
+#
+# Building R:
+#  http://cran.r-project.org/doc/manuals/R-admin.html#Installing-R-under-Unix_002dalikes
+#  http://cran.r-project.org/doc/manuals/R-admin.html#Essential-programs-and-libraries
+#
+# Packages included on Heroku Cedar
+#  https://devcenter.heroku.com/articles/cedar-ubuntu-packages
+#
+
+# fail fast
+set -e
+
+# debug
+# set -x
+
+## HELPERS
+
+function download() {
+  if [ ! -f "$2" ]; then
+    echo Downloading $2...
+    curl $1 -o $2 -s -S
+  else
+    echo Got $2...
+  fi
+}
+
+## SCRIPT
+
+r_version="${1:-3.1.0}"
+r_version_major=${r_version:0:1}
+build_no="${2:-`date +%Y%m%d-%H%M`}"
+
+# check arguments
+if ([ -z "$r_version" ] || [ -z "$build_no" ]); then
+  echo
+  echo "USAGE: $0 VERSION [BUILDNUM]"
+  echo
+  echo "  VERSION    is the R version. E.g. 3.1.0"
+  echo "  BUILDNUM   the build number. E.g. 20140608-2010"
+  echo
+  exit 1
+fi
+
+echo ======================================================================
+echo Linux Version = `uname --all`
+echo R Version = $r_version
+echo Build No. = $build_no
+echo
+( set -o posix ; set )
+echo
+echo ======================================================================
+
+basedir="$( cd -P "$( dirname "$0" )" && pwd )"
+
+# create output directory
+vendordir=/app/vendor
+mkdir -p $vendordir
+
+# get the sources
+download "http://cran.r-project.org/src/base/R-$r_version_major/R-$r_version.tar.gz" R-$r_version.tar.gz
+tar xzf R-$r_version.tar.gz
+
+export R_BASE="$vendordir/R"
+export R_INCLUDE="$R_BASE/lib64/R/include"
+
+export LD_LIBRARY_PATH="/app/.apt/usr/lib/libblas:/app/.apt/usr/lib/lapack:$LD_LIBRARY_PATH"
+export LDFLAGS="-L/app/.apt/usr/lib/libblas -L/app/.apt/usr/lib/lapack $LDFLAGS"
+
+# copy over our customized vars.mk file
+cp -f $basedir/vars.mk $basedir/R-$r_version/share/make/vars.mk
+
+pushd $basedir/R-$r_version/
+
+# build R
+echo ======================================================================
+echo Building R
+echo ======================================================================
+
+# download the recommended packages
+# ./tools/rsync-recommended
+
+./configure --prefix=$R_BASE \
+            --with-x \
+            --with-jpeglib  \
+            --with-libpng \
+            --with-cairo \
+            --with-lapack \
+            --with-blas \
+            --enable-R-shlib
+
+make
+make install
+make clean
+
+popd
+
+# remove apt-get installed R (which doesn't work)
+rm     /app/.apt/etc/bash_completion.d/R
+rm     /app/.apt/usr/bin/R
+rm     /app/.apt/usr/bin/Rscript
+rm -rf /app/.apt/etc/R
+rm -rf /app/.apt/share/R
+rm -rf /app/.apt/usr/lib/R
+rm -rf /app/.apt/usr/share/R
+
+# compress and upload to S3 bucket
+pushd /app
+mkdir -p /app/vendor/.apt
+cp -R /app/.apt/* /app/vendor/.apt
+
+tar czf "R-$r_version-binaries-$build_no.tar.gz" vendor/.apt vendor/R
+popd
+
+echo ======================================================================
+echo Uploading binaries to S3
+bundle install
+bundle exec ruby ./s3_upload.rb "/app/R-$r_version-binaries-$build_no.tar.gz"

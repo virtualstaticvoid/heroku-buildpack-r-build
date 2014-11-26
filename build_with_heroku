@@ -1,0 +1,65 @@
+#!/bin/bash
+
+#
+# use this script to build the R binaries on a heroku instance
+#
+
+shopt -s extglob
+
+# fail fast
+set -e
+
+# debug
+# set -x
+
+if [[ ! -f .env ]]; then
+  cp .env.example .env
+  echo "Please edit the .env file and supply your AWS credentials before continuing."
+  exit 1
+fi
+
+r_version="${1:-3.1.0}"
+build_no="${2:-`date +%Y%m%d-%H%M`}"
+stack="${3:-cedar-14}"
+
+# create temporary working directory
+# and copy files over...
+dir=`mktemp -d`
+cp -r . $dir
+
+pushd $dir
+
+rm -rf .git > /dev/null
+git init
+git add -f .buildpacks \
+           .env \
+           Aptfile \
+           build-r \
+           Gemfile \
+           Gemfile.lock \
+           s3_upload.rb \
+           vars.mk
+
+git commit -m "build scripts"
+
+heroku apps:create --stack $stack --buildpack https://github.com/ddollar/heroku-buildpack-multi.git
+app=`heroku apps:info -s | grep ^name=`
+app=${app:5}
+
+git push heroku master
+
+heroku run "bash -c './build-r $r_version $build_no' &> ./build-r-$build_no.log; bundle exec ruby ./s3_upload.rb ./build-r-$build_no.log" --app $app
+
+heroku apps:destroy $app --confirm $app
+
+popd
+
+# clean up temporary directory
+rm -rf $dir
+
+# download the file off s3
+echo Downloading log file
+wget "https://heroku-buildpack-r.s3.amazonaws.com/build-r-$build_no.log"
+
+# echo Downloading binaries file
+wget "https://heroku-buildpack-r.s3.amazonaws.com/R-$r_version-binaries-$build_no.tar.gz"
