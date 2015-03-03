@@ -18,9 +18,21 @@ if [[ ! -f .env ]]; then
   exit 1
 fi
 
-r_version="${1:-3.1.0}"
-build_no="${2:-`date +%Y%m%d-%H%M`}"
-stack="${3:-cedar-14}"
+r_version="${1:-3.1.2}"
+stack="${2:-cedar-14}"
+build_no="${3:-`date +%Y%m%d-%H%M`}"
+
+# check arguments
+if ([ -z "$r_version" ] || [ -z "$stack" ] || [ -z "$build_no" ]); then
+  echo
+  echo "USAGE: $0 VERSION [BUILDNUM]"
+  echo
+  echo "  VERSION    is the R version. E.g. 3.1.2"
+  echo "  STACK      is the Heroku stack to build on. E.g. cedar-14"
+  echo "  BUILDNUM   the build number. E.g. 20150301-4321"
+  echo
+  exit 1
+fi
 
 # create temporary working directory
 # and copy files over...

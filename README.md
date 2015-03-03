@@ -13,27 +13,27 @@ In each case, the scripts support specifying the R version and optionally the bu
 
   `$ build_with_heroku 3.0.4`
 
-  or, build `R-3.1.0` on Heroku, with a build version of `20140101_31`
+  or, build `R-3.1.2` on Heroku, specifying the stack
 
-  `$ build_with_heroku 3.1.0 20140101_31`
+  `$ build_with_heroku 3.1.2 cedar-14`
 
-  or, build `R-3.1.0` on Heroku, with a build version of `20140101_31` and specifing the stack to use
+  or, build `R-3.1.2` on Heroku, cedar-14 stack, with a build version of `20150301_4123`
 
-  `$ build_with_heroku 3.1.0 20140101_31 cedar-14`
+  `$ build_with_heroku 3.1.2 cedar-14 20150301_4123`
 
 ## Building R on Heroku
 
 `$ build_with_heroku [R_VERSION [BUILD_NO STACK]]`
 
   R_VERSION     R version to build.
-                Defaults to 3.1.0
-
-  BUILD_NO      Build number for the output files.
-                Defaults to the date in %Y%m%d-%H%M format.
+                Defaults to 3.1.2
 
   STACK         Heroku stack to use for building R binaries
                 Valid values include "cedar" and "cedar-14"
                 Defaults to "cedar-14" which is the Heroku default
+
+  BUILD_NO      Build number for the output files.
+                Defaults to the date in %Y%m%d-%H%M format.
 
 ## Building R on Vagrant
 
