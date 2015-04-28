@@ -1,4 +1,5 @@
 build-essential
 libgsl0-dev
+libc6-dev
 r-base
 r-base-dev
