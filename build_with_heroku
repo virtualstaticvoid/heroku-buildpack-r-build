@@ -4,6 +4,17 @@
 # use this script to build the R binaries on a heroku instance
 #
 
+#
+# NOTE:
+#
+#  even though R is installed first via apt-get, it still needs to be built from
+#  source, since the paths need to be in respect of /app/vendor for it to work.
+#
+#  also, by installing R with apt-get, any dependencies get installed, so we don't
+#  have to build everything from source, as was the case in earlier versions of the buildpack.
+#  E.g. the fortran77 compiler wasn't included in the cedar(-12) heroku stack
+#
+
 shopt -s extglob
 
 # fail fast
@@ -60,6 +71,10 @@ app=${app:5}
 
 git push heroku master
 
+sleep 10
+
+# NOTE: Requires port 5000 to be open!
+# See https://devcenter.heroku.com/articles/one-off-dynos#timeout-awaiting-process
 heroku run "bash -c './build-r $r_version $build_no' &> ./build-r-$build_no.log; bundle exec ruby ./s3_upload.rb ./build-r-$build_no.log" --app $app
 
 heroku apps:destroy $app --confirm $app
