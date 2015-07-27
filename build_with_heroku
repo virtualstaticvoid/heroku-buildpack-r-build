@@ -33,6 +33,10 @@ r_version="${1:-3.2.1}"
 stack="${2:-cedar-14}"
 build_no="${3:-`date +%Y%m%d-%H%M`}"
 
+# these are the APT package versions, so the R version corresponds with the one built from source
+# r_package_version="${4:-${r_version}-1ubuntu1}"
+# r_dev_package_version="${5:-${r_version}-1ubuntu1}"
+
 # check arguments
 if ([ -z "$r_version" ] || [ -z "$stack" ] || [ -z "$build_no" ]); then
   echo
@@ -51,6 +55,10 @@ dir=`mktemp -d`
 cp -r . $dir
 
 pushd $dir
+
+# write out specific R version for Aptfile to use
+# sed -i "s/^r-base$/r-base=${r_package_version}/g" Aptfile
+# sed -i "s/^r-base-dev$/r-base-dev=${r_dev_package_version}/g" Aptfile
 
 rm -rf .git > /dev/null
 git init
