@@ -34,6 +34,10 @@ r_version="${1:-3.2.2}"
 r_version_major=${r_version:0:1}
 build_no="${2:-`date +%Y%m%d-%H%M`}"
 
+if [ -z "$STACK" ]; then
+  STACK="cedar-14"
+fi
+
 # check arguments
 if ([ -z "$r_version" ] || [ -z "$build_no" ]); then
   echo
@@ -49,6 +53,7 @@ echo ======================================================================
 echo Linux Version = `uname --all`
 echo R Version = $r_version
 echo Build No. = $build_no
+echo Stack = $STACK
 echo
 ( set -o posix ; set )
 echo
@@ -118,4 +123,4 @@ popd
 echo ======================================================================
 echo Uploading binaries to S3
 bundle install
-bundle exec ruby ./s3_upload.rb "/app/R-$r_version-binaries-$build_no.tar.gz"
+bundle exec ruby ./s3_upload.rb "/app/R-$r_version-binaries-$build_no.tar.gz" $STACK
