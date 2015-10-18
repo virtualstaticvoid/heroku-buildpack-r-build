@@ -1,11 +1,8 @@
 # Building the R binaries for the [heroku-buildpack-r][1] buildpack
 
-The binaries for the build pack can be built in several ways.
+The binaries for the build pack can be built using an Heroku application.
 
-* [Heroku][2] - Creates a production build of R
-* [Vagrant][3] - For development, debugging and testing scripts
-
-In each case, the scripts support specifying the R version and optionally the build version number to use.
+The scripts support specifying the R version and optionally the build version number to use.
 
   E.g.
 
@@ -35,16 +32,4 @@ In each case, the scripts support specifying the R version and optionally the bu
   BUILD_NO      Build number for the output files.
                 Defaults to the date in %Y%m%d-%H%M format.
 
-## Building R on Vagrant
-
-**Note**: This method hasn't been implemented yet.
-
-This method uses a Vagrant virtual machine, which runs a [cedar like stack][4] so that you can develop, debug
-and test the build scripts in an interactive way before building using the Heroku method.
-
-`$ build_with_vagrant [R_VERSION [BUILD_NO]]`
-
 [1]: https://github.com/virtualstaticvoid/heroku-buildpack-r
-[2]: https://www.heroku.com
-[3]: http://www.vagrantup.com
-[4]: https://github.com/ejholmes/vagrant-heroku
