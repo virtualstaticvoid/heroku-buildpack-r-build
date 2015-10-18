@@ -6,7 +6,9 @@ require 'aws-sdk'
 Dotenv.load
 
 file = ARGV.first || 'build.tar.gz'
-obj_name = File.basename(file)
+stack = ARGV.last || ''
+
+obj_name = File.join(stack, File.basename(file))
 
 puts "Uploading '#{Pathname.new(file)}'..."
 puts "Using '#{ENV['AWS_ACCESS_KEY_ID']}' access key."
