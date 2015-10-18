@@ -88,6 +88,7 @@ echo ======================================================================
 # download the recommended packages
 # ./tools/rsync-recommended
 
+# See https://cran.r-project.org/doc/manuals/r-release/R-admin.html#Configuration-options
 ./configure --prefix=$R_BASE \
             --with-x=no \
             --with-jpeglib \
