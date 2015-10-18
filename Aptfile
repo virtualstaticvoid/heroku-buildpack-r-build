@@ -1,5 +1,10 @@
 build-essential
+gcc
+cpp
+gfortran
+gfortran-multilib
 libgsl0-dev
 libc6-dev
+pandoc
 r-base
 r-base-dev
