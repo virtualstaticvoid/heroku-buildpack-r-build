@@ -69,7 +69,8 @@ git add -f .buildpacks \
            Gemfile \
            Gemfile.lock \
            s3_upload.rb \
-           vars.mk
+           vars.mk \
+           packages/*
 
 git commit -m "build scripts"
 

@@ -88,6 +88,9 @@ echo ======================================================================
 # download the recommended packages
 # ./tools/rsync-recommended
 
+# copy over additional recommended packages to include (as specified in vars.mk)
+cp $basedir/packages/* ./src/library/Recommended
+
 # See https://cran.r-project.org/doc/manuals/r-release/R-admin.html#Configuration-options
 ./configure --prefix=$R_BASE \
             --with-x=no \
