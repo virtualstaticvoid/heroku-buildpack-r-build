@@ -5,6 +5,6 @@ gfortran
 gfortran-multilib
 libgsl0-dev
 libc6-dev
-pandoc
+https://github.com/jgm/pandoc/releases/download/1.15.1/pandoc-1.15.1-1-amd64.deb
 r-base
 r-base-dev
