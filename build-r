@@ -30,13 +30,15 @@ function download() {
 
 ## SCRIPT
 
-r_version="${1:-3.2.2}"
-r_version_major=${r_version:0:1}
-build_no="${2:-`date +%Y%m%d-%H%M`}"
-
 if [ -z "$STACK" ]; then
   STACK="cedar-14"
 fi
+
+r_version="${1:-3.2.2}"
+r_version_major=${r_version:0:1}
+build_no="${2:-`date +%Y%m%d-%H%M`}"
+basedir="$( cd -P "$( dirname "$0" )" && pwd )"
+vendordir=$basedir/vendor
 
 # check arguments
 if ([ -z "$r_version" ] || [ -z "$build_no" ]); then
@@ -50,19 +52,18 @@ if ([ -z "$r_version" ] || [ -z "$build_no" ]); then
 fi
 
 echo ======================================================================
-echo Linux Version = `uname --all`
-echo R Version = $r_version
-echo Build No. = $build_no
-echo Stack = $STACK
+echo Linux Version  = `uname --all`
+echo Stack          = $STACK
+echo Base Dir       = $basedir
+echo Vendor Dir     = $vendordir
+echo R Version      = $r_version
+echo Build No.      = $build_no
 echo
-( set -o posix ; set )
+( set -o posix; set )
 echo
 echo ======================================================================
 
-basedir="$( cd -P "$( dirname "$0" )" && pwd )"
-
 # create output directory
-vendordir=/app/vendor
 mkdir -p $vendordir
 
 # get the sources
