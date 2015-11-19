@@ -35,7 +35,6 @@ build_no="${3:-`date +%Y%m%d-%H%M`}"
 
 # these are the APT package versions, so the R version corresponds with the one built from source
 # r_package_version="${4:-${r_version}-1ubuntu1}"
-# r_dev_package_version="${5:-${r_version}-1ubuntu1}"
 
 # check arguments
 if ([ -z "$r_version" ] || [ -z "$stack" ] || [ -z "$build_no" ]); then
@@ -58,23 +57,24 @@ pushd $dir
 
 # write out specific R version for Aptfile to use
 # sed -i "s/^r-base$/r-base=${r_package_version}/g" Aptfile
-# sed -i "s/^r-base-dev$/r-base-dev=${r_dev_package_version}/g" Aptfile
+# sed -i "s/^r-base-dev$/r-base-dev=${r_package_version}/g" Aptfile
 
 rm -rf .git > /dev/null
 git init
-git add -f .buildpacks \
-           .env \
-           Aptfile \
-           build-r \
-           Gemfile \
+git add -f .buildpacks  \
+           .env         \
+           Aptfile      \
+           build-r      \
+           Gemfile      \
            Gemfile.lock \
            s3_upload.rb \
-           vars.mk \
+           vars.mk      \
            packages/*
 
 git commit -m "build scripts"
 
-heroku apps:create --stack $stack --buildpack https://github.com/ddollar/heroku-buildpack-multi.git
+heroku apps:create --stack $stack \
+                   --buildpack "https://github.com/ddollar/heroku-buildpack-multi.git"
 
 app=`heroku apps:info -s | grep ^git-url=`
 app=${app:23:-4}
