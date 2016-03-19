@@ -79,14 +79,11 @@ rm -rf /app/.apt/usr/share/doc/r-base-core
 rm -rf /app/.apt/usr/share/doc/r-doc-html
 rm -rf /app/.apt/usr/share/R
 
-# trialed and errored on this; copy over libs to gfortran, so
-# that liblto_plugin.so and others can be found
-# (tried using LDFLAGS, LD_LIBRARY_PATH and LIBRARY_PATH but didn't work)
-# cp /usr/lib/gcc/x86_64-linux-gnu/$GCC_VERSION/* /app/.apt/usr/lib/gcc/x86_64-linux-gnu/$GCC_VERSION
-cp /usr/lib/gcc/x86_64-linux-gnu/$GCC_VERSION/liblto_plugin.so /app/.apt/usr/lib/gcc/x86_64-linux-gnu/$GCC_VERSION/liblto_plugin.so
-
-# patch libgsl pkg-config file
-sed 's/\/usr/\/app\/.apt\/usr/g' /app/.apt/usr/lib/pkgconfig/gsl.pc | tee /app/.apt/usr/lib/pkgconfig/gsl.pc
+# Remove unecessary stuff to avoid slug bloat
+rm -rf /app/.apt/etc
+rm -rf /app/.apt/var
+rm -rf /app/.apt/usr/sbin
+rm -rf /app/.apt/usr/share
 
 # create output directory
 mkdir -p $VENDORDIR
@@ -120,15 +117,15 @@ cp $BASEDIR/packages/* ./src/library/Recommended
 
 # See https://cran.r-project.org/doc/manuals/r-release/R-admin.html#Configuration-options
 ./configure --prefix=$R_BASE           \
-            --enable-memory-profiling  \
-            --enable-R-profiling       \
+            --disable-memory-profiling  \
+            --disable-R-profiling       \
             --enable-R-shlib           \
             --with-blas                \
-            --with-cairo               \
-            --with-jpeglib             \
+            --without-cairo               \
+            --without-jpeglib             \
             --with-lapack              \
             --with-readline            \
-            --with-system-bzlib        \
+            --without-system-bzlib        \
             --with-system-pcre         \
             --with-system-zlib         \
             --with-tcltk               \
@@ -142,6 +139,13 @@ make install
 make clean
 
 popd
+
+/app/vendor/R/bin/R --vanilla <<EOF
+install.packages("RPostgreSQL", repos='http://cran.cnr.Berkeley.edu')
+install.packages("zoo", repos='http://cran.cnr.Berkeley.edu')
+install.packages("RCurl", repos='http://cran.cnr.Berkeley.edu')
+install.packages("XML", repos='http://cran.cnr.Berkeley.edu')
+EOF
 
 # move .apt under vendor, buildpack compile will move it back
 mkdir -p /app/vendor/.apt
