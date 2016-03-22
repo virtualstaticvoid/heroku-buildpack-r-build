@@ -5,25 +5,29 @@ require 'aws-sdk'
 
 Dotenv.load
 
-file = ARGV.first || 'build.tar.gz'
+file_name = ARGV.first || 'build.tar.gz'
 stack = ARGV.last || ''
 
-obj_name = File.join(stack, File.basename(file))
+key = File.join(stack, File.basename(file_name))
 
-puts "Uploading '#{Pathname.new(file)}'..."
+puts "Uploading '#{Pathname.new(file_name)}'..."
 puts "Using '#{ENV['AWS_ACCESS_KEY_ID']}' access key."
 
-AWS.config(
+Aws.config = {
   :access_key_id => ENV['AWS_ACCESS_KEY_ID'],
-  :secret_access_key => ENV['AWS_SECRET_ACCESS_KEY']
-)
+  :secret_access_key => ENV['AWS_SECRET_ACCESS_KEY'],
+  :region => 'us-east-1'
+}
 
-s3 = AWS::S3.new
+s3 = Aws::S3::Client.new
 
-bucket = s3.buckets['heroku-buildpack-r']
+resp = File.open(file_name, 'rb') do |file|
+  s3.put_object(
+    :bucket => 'heroku-buildpack-r',
+    :key => key,
+    :body => file,
+    :acl => 'public-read'
+  )
+end
 
-obj = bucket.objects[obj_name]
-obj.write(Pathname.new(file))
-obj.acl = :public_read
-
-puts "Uploaded '#{obj_name}' to S3 successfully."
+puts "Uploaded '#{key}' to S3 successfully. [#{resp.etag}]"
