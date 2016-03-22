@@ -23,7 +23,7 @@ The scripts support specifying the R version and optionally the build version nu
 `$ build_with_heroku [R_VERSION [BUILD_NO STACK]]`
 
   R_VERSION     R version to build.
-                Defaults to 3.1.2
+                Defaults to 3.2.4
 
   STACK         Heroku stack to use for building R binaries
                 Valid values include "cedar" and "cedar-14"
