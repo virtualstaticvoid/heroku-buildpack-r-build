@@ -145,8 +145,12 @@ make clean
 popd
 
 # move .apt under vendor, buildpack compile will move it back
-mkdir -p /app/vendor/.apt
-cp -R /app/.apt/* /app/vendor/.apt
+# since others may use heroku-buildpack-apt with the R buildpack
+# in which case we need control over how the .apt directory gets merged
+mv /app/.apt /app/vendor
+
+# test R by printing out the capabilities
+/app/vendor/R/bin/R --no-save -e "capabilities()"
 
 # compress and upload to S3 bucket
 BINARIES_FILE="R-$R_VERSION-binaries-$BUILD_NO.tar.gz"
