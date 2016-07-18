@@ -61,8 +61,7 @@ pushd $dir
 
 rm -rf .git > /dev/null
 git init
-git add -f .buildpacks  \
-           .env         \
+git add -f .env         \
            Aptfile      \
            build-r      \
            Gemfile      \
@@ -73,11 +72,13 @@ git add -f .buildpacks  \
 
 git commit -m "build scripts"
 
-heroku apps:create --stack $stack \
-                   --buildpack "https://github.com/ddollar/heroku-buildpack-multi.git"
+heroku apps:create --stack $stack
 
 app=`heroku apps:info -s | grep ^git-url=`
 app=${app:31:-4}  # git-url=https://git.heroku.com/app-name-number.git
+
+heroku buildpacks:add https://github.com/heroku/heroku-buildpack-ruby --app $app
+heroku buildpacks:add https://github.com/ddollar/heroku-buildpack-apt --app $app
 
 git push heroku master
 
