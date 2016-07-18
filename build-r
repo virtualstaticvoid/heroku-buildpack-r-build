@@ -97,6 +97,7 @@ tar xzf R-$R_VERSION.tar.gz
 
 export R_BASE="$VENDORDIR/R"
 export R_INCLUDE="$R_BASE/lib64/R/include"
+export INCLUDE_PATH="/app/.apt/usr/include:$INCLUDE_PATH"
 export LD_LIBRARY_PATH="/app/.apt/usr/lib/gcc/x86_64-linux-gnu/$GCC_VERSION:/app/.apt/usr/lib/libblas:/app/.apt/usr/lib/lapack:$LD_LIBRARY_PATH"
 export LDFLAGS="-L/app/.apt/usr/lib/gcc/x86_64-linux-gnu/$GCC_VERSION -L/app/.apt/usr/lib/libblas -L/app/.apt/usr/lib/lapack $LDFLAGS"
 
