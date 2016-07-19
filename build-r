@@ -40,6 +40,7 @@ BUILD_NO="${2:-`date +%Y%m%d-%H%M`}"
 BASEDIR="$( cd -P "$( dirname "$0" )" && pwd )"
 VENDORDIR=$BASEDIR/vendor
 GCC_VERSION=4.8
+ARCH=`dpkg-architecture -qDEB_HOST_MULTIARCH`
 
 # check arguments
 if ([ -z "$R_VERSION" ] || [ -z "$BUILD_NO" ]); then
@@ -59,9 +60,6 @@ echo Base Dir       = $BASEDIR
 echo Vendor Dir     = $VENDORDIR
 echo R Version      = $R_VERSION
 echo Build No.      = $BUILD_NO
-echo
-( set -o posix; set )
-echo
 echo ======================================================================
 
 # R was installed via Aptfile so that any dependencies get installed,
@@ -82,8 +80,8 @@ rm -rf /app/.apt/usr/share/R
 # trialed and errored on this; copy over libs to gfortran, so
 # that liblto_plugin.so and others can be found
 # (tried using LDFLAGS, LD_LIBRARY_PATH and LIBRARY_PATH but didn't work)
-# cp /usr/lib/gcc/x86_64-linux-gnu/$GCC_VERSION/* /app/.apt/usr/lib/gcc/x86_64-linux-gnu/$GCC_VERSION
-cp /usr/lib/gcc/x86_64-linux-gnu/$GCC_VERSION/liblto_plugin.so /app/.apt/usr/lib/gcc/x86_64-linux-gnu/$GCC_VERSION/liblto_plugin.so
+# cp /usr/lib/gcc/$ARCH/$GCC_VERSION/* /app/.apt/usr/lib/gcc/$ARCH/$GCC_VERSION
+cp /usr/lib/gcc/$ARCH/$GCC_VERSION/liblto_plugin.so /app/.apt/usr/lib/gcc/$ARCH/$GCC_VERSION/liblto_plugin.so
 
 # patch libgsl pkg-config file
 sed 's/\/usr/\/app\/.apt\/usr/g' /app/.apt/usr/lib/pkgconfig/gsl.pc | tee /app/.apt/usr/lib/pkgconfig/gsl.pc
@@ -97,9 +95,13 @@ tar xzf R-$R_VERSION.tar.gz
 
 export R_BASE="$VENDORDIR/R"
 export R_INCLUDE="$R_BASE/lib64/R/include"
-export INCLUDE_PATH="/app/.apt/usr/include:$INCLUDE_PATH"
-export LD_LIBRARY_PATH="/app/.apt/usr/lib/gcc/x86_64-linux-gnu/$GCC_VERSION:/app/.apt/usr/lib/libblas:/app/.apt/usr/lib/lapack:$LD_LIBRARY_PATH"
-export LDFLAGS="-L/app/.apt/usr/lib/gcc/x86_64-linux-gnu/$GCC_VERSION -L/app/.apt/usr/lib/libblas -L/app/.apt/usr/lib/lapack $LDFLAGS"
+
+export INCLUDE_PATH="/app/.apt/usr/include:/app/.apt/usr/include/tcl8.5:$INCLUDE_PATH"
+export LD_LIBRARY_PATH="/app/.apt/usr/lib/gcc/$ARCH/$GCC_VERSION:/app/.apt/usr/lib/libblas:/app/.apt/usr/lib/lapack:$LD_LIBRARY_PATH"
+export CFLAGS="-I/app/.apt/usr/include -I/app/.apt/usr/include/tcl8.5 $CFLAGS"
+export CPATH="/app/.apt/usr/include:/app/.apt/usr/include/tcl8.5:$CPATH"
+export CPPPATH="/app/.apt/usr/include:/app/.apt/usr/include/tcl8.5:$CPPPATH"
+export LDFLAGS="-L/app/.apt/usr/lib/gcc/$ARCH/$GCC_VERSION -L/app/.apt/usr/lib/libblas -L/app/.apt/usr/lib/lapack $LDFLAGS"
 
 mkdir -p $R_BASE
 
@@ -107,6 +109,9 @@ mkdir -p $R_BASE
 cp -f $BASEDIR/vars.mk $BASEDIR/R-$R_VERSION/share/make/vars.mk
 
 pushd $BASEDIR/R-$R_VERSION/
+
+# print out environment (for debugging builds)
+( set -o posix; set )
 
 # build R
 echo ======================================================================
@@ -120,19 +125,18 @@ echo ======================================================================
 cp $BASEDIR/packages/* ./src/library/Recommended
 
 # See https://cran.r-project.org/doc/manuals/r-release/R-admin.html#Configuration-options
-./configure --prefix=$R_BASE           \
-            --enable-memory-profiling  \
-            --enable-R-profiling       \
-            --enable-R-shlib           \
-            --with-blas                \
-            --with-cairo               \
-            --with-jpeglib             \
-            --with-lapack              \
-            --with-readline            \
-            --with-system-bzlib        \
-            --with-system-pcre         \
-            --with-system-zlib         \
-            --with-tcltk               \
+./configure --prefix=$R_BASE                                     \
+            --enable-memory-profiling                            \
+            --enable-R-profiling                                 \
+            --enable-R-shlib                                     \
+            --with-blas                                          \
+            --with-cairo                                         \
+            --with-jpeglib                                       \
+            --with-lapack                                        \
+            --with-readline                                      \
+            --with-tcltk                                         \
+            --with-tcl-config=/app/.apt/usr/lib/$ARCH/tcl8.5/tclConfig.sh \
+            --with-tk-config=/app/.apt/usr/lib/$ARCH/tk8.5/tkConfig.sh    \
             --enable-lto
 
 # copy configuration for debugging purposes
@@ -146,6 +150,21 @@ popd
 
 # test R by printing out the capabilities
 /app/vendor/R/bin/R --no-save -e "capabilities()"
+
+# delete unneeded files to reduce slug size
+# pushd /app
+# rm -rf .apt/etc
+# rm -rf .apt/usr/share/applications
+# rm -rf .apt/usr/share/bug
+# rm -rf .apt/usr/share/doc
+# rm -rf .apt/usr/share/doc-base
+# rm -rf .apt/usr/share/man
+# rm -rf .apt/usr/share/texmf
+# rm -rf .apt/var
+# rm -rf R/lib/R/doc
+# rm -rf R/share
+# find . -type d -name doc -print0 | xargs -0 rm -rf
+# popd
 
 # move .apt under vendor, buildpack compile will move it back
 # since others may use heroku-buildpack-apt with the R buildpack
