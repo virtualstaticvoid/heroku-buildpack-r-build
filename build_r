@@ -140,16 +140,20 @@ sed -i -e s/#force_color_prompt=yes/force_color_prompt=yes/ $BASH_RC_FILE
 echo "export PATH=$FAKECHROOT_DIR/sbin:$FAKECHROOT_DIR/bin:\$PATH" >> $BASH_RC_FILE
 
 # configure apt
-sources=<<EOF
-deb http://archive.ubuntu.com/ubuntu trusty main
-deb http://archive.ubuntu.com/ubuntu trusty-updates main
-deb http://archive.ubuntu.com/ubuntu trusty universe
-deb http://archive.ubuntu.com/ubuntu trusty-updates universe
-deb http://cran.rstudio.com/bin/linux/ubuntu trusty
-EOF
+fakechroot fakeroot chroot $CHROOT_DIR \
+  /bin/sh -c 'echo "deb http://archive.ubuntu.com/ubuntu trusty main" > /etc/apt/sources.list'
 
 fakechroot fakeroot chroot $CHROOT_DIR \
-  /bin/sh -c 'echo "$sources" > /etc/apt/sources.list'
+  /bin/sh -c 'echo "deb http://archive.ubuntu.com/ubuntu trusty-updates main" >> /etc/apt/sources.list'
+
+fakechroot fakeroot chroot $CHROOT_DIR \
+  /bin/sh -c 'echo "deb http://archive.ubuntu.com/ubuntu trusty universe" >> /etc/apt/sources.list'
+
+fakechroot fakeroot chroot $CHROOT_DIR \
+  /bin/sh -c 'echo "deb http://archive.ubuntu.com/ubuntu trusty-updates universe" >> /etc/apt/sources.list'
+
+fakechroot fakeroot chroot $CHROOT_DIR \
+  /bin/sh -c 'echo "deb http://cran.rstudio.com/bin/linux/ubuntu trusty" >> /etc/apt/sources.list'
 
 # add cran key
 fakechroot fakeroot chroot $CHROOT_DIR \
