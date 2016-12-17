@@ -1,0 +1,4 @@
+#!/bin/bash
+
+BUILDPACK_ARCHIVE=$1
+aws s3 cp $BUILDPACK_ARCHIVE "s3://heroku-buildpack-r/cedar-14/$BUILDPACK_ARCHIVE" --acl=public-read --profile=heroku-buildpack-r

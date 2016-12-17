@@ -1,0 +1,9 @@
+#!/bin/bash
+
+BUILD_NO="${1:-`date +%Y%m%d-%H%M`}"
+
+./build_with_docker 3.3.2 "${BUILD_NO}" &> "build-3.3.2-${BUILD_NO}.log"
+#./build_with_docker 3.3.1 "${BUILD_NO}" &> "build-3.3.1-${BUILD_NO}.log"
+#./build_with_docker 3.3.0 "${BUILD_NO}" &> "build-3.3.0-${BUILD_NO}.log"
+#./build_with_docker 3.2.5 "${BUILD_NO}" &> "build-3.2.5-${BUILD_NO}.log"
+#./build_with_docker 3.3.3 "${BUILD_NO}" &> "build-3.3.3-${BUILD_NO}.log"

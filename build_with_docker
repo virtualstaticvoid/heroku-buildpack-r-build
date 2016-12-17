@@ -1,0 +1,34 @@
+#!/bin/bash
+
+#
+# use this script to build the R binaries with the `heroku/cedar:14` docker image locally
+#
+
+shopt -s extglob
+
+# fail fast
+set -e
+
+# debug
+# set -x
+
+if [[ ! -f .env ]]; then
+  cp .env.example .env
+  echo "Please edit the .env file and supply your AWS credentials before continuing."
+  exit 1
+fi
+
+R_VERSION="${1:-3.3.2}"
+BUILD_NO="${2:-`date +%Y%m%d-%H%M`}"
+STACK="${3:-cedar-14}"
+BUILDPACK_ARCHIVE="R-$R_VERSION-binaries-$BUILD_NO.tar.gz"
+
+# docker run -it -v $(pwd):/app heroku/cedar:14 /bin/bash
+
+docker run -t \
+  -v $(pwd):/var/tmp/scripts \
+  heroku/cedar:14 \
+  /var/tmp/scripts/build_r $R_VERSION $BUILD_NO $STACK
+
+# upload to S3
+# aws s3 cp $BUILDPACK_ARCHIVE "s3://heroku-buildpack-r/$STACK/$BUILDPACK_ARCHIVE" --acl=public-read --profile=heroku-buildpack-r
