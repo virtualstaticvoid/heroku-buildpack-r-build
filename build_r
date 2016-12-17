@@ -153,7 +153,7 @@ fakechroot fakeroot chroot $CHROOT_DIR \
   /bin/sh -c 'echo "deb http://archive.ubuntu.com/ubuntu trusty-updates universe" >> /etc/apt/sources.list'
 
 fakechroot fakeroot chroot $CHROOT_DIR \
-  /bin/sh -c 'echo "deb http://cran.rstudio.com/bin/linux/ubuntu trusty" >> /etc/apt/sources.list'
+  /bin/sh -c 'echo "deb http://cran.rstudio.com/bin/linux/ubuntu trusty/" >> /etc/apt/sources.list'
 
 # add cran key
 fakechroot fakeroot chroot $CHROOT_DIR \
