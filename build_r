@@ -201,9 +201,6 @@ fakechroot fakeroot chroot $CHROOT_DIR \
 fakechroot fakeroot chroot $CHROOT_DIR \
   /usr/bin/R -e "capabilities()"
 
-# full
-tar czf R-$R_VERSION-binaries-$BUILD_NO-full.tar.gz .root .tools
-
 # remove unneeded files to reduce slug size
 
 rm -rf $CHROOT_DIR/usr/share/doc
