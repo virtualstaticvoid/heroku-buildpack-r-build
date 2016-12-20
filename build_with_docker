@@ -34,4 +34,4 @@ docker run -t \
 docker cp "$R_VERSION-$BUILD_NO:/app/R-$R_VERSION-binaries-$BUILD_NO.tar.gz" .
 
 # upload to S3
-# aws s3 cp $BUILDPACK_ARCHIVE "s3://heroku-buildpack-r/$STACK/$BUILDPACK_ARCHIVE" --acl=public-read --profile=heroku-buildpack-r
+aws s3 cp $BUILDPACK_ARCHIVE "s3://heroku-buildpack-r/$STACK/$BUILDPACK_ARCHIVE" --acl=public-read --profile=heroku-buildpack-r
