@@ -27,8 +27,11 @@ BUILDPACK_ARCHIVE="R-$R_VERSION-binaries-$BUILD_NO.tar.gz"
 
 docker run -t \
   -v $(pwd):/var/tmp/scripts \
+  --name "$R_VERSION-$BUILD_NO" \
   heroku/cedar:14 \
   /var/tmp/scripts/build_r $R_VERSION $BUILD_NO $STACK
+
+docker cp "$R_VERSION-$BUILD_NO:/app/R-$R_VERSION-binaries-$BUILD_NO.tar.gz" .
 
 # upload to S3
 # aws s3 cp $BUILDPACK_ARCHIVE "s3://heroku-buildpack-r/$STACK/$BUILDPACK_ARCHIVE" --acl=public-read --profile=heroku-buildpack-r

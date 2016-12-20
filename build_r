@@ -4,13 +4,16 @@
 set -e
 
 # debug
-set -x
+# set -x
 
 # for checking which version of the build script was used, output to STDOUT
 # so that it gets included in the build log output file
 echo "#======================================================================"
 echo "# $0"
 cat $0
+echo "#======================================================================"
+echo "# Environment"
+set
 echo "#======================================================================"
 
 R_VERSION="${1:-3.3.2}"
@@ -201,7 +204,7 @@ fakechroot fakeroot chroot $CHROOT_DIR \
 # full
 tar czf R-$R_VERSION-binaries-$BUILD_NO-full.tar.gz .root .tools
 
-# remove unneeded files
+# remove unneeded files to reduce slug size
 
 rm -rf $CHROOT_DIR/usr/share/doc
 rm -rf $CHROOT_DIR/usr/share/info
@@ -218,7 +221,6 @@ symlink_files $CHROOT_DIR/usr /usr
 
 #======================================================================
 topic 'Packaging R'
-# TODO: ensure symlinks are preserved!
 
 tar czf R-$R_VERSION-binaries-$BUILD_NO.tar.gz .root .tools
 
