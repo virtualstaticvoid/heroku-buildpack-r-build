@@ -51,43 +51,6 @@ function indent() {
   esac
 }
 
-function symlink_files() {
-
-  # target $1 vs source $2
-  echo "Comparing $1 -> $2"
-
-  pushd "$1" > /dev/null
-
-  for f in *
-  do
-
-    # directory?
-    if [[ -d "$f" ]]; then
-
-      # skip symlinked directories
-      if [[ ! -L "$f" ]]; then
-        symlink_files "$1/$f" "$2/$f"
-      fi
-
-    # regular file, which exists in source directory?
-    elif [[ ! -L "$f" ]] && [[ -f "$2/$f" ]]; then
-
-      # get file sizes
-      i=$(wc -c "$f"    | cut -d' ' -f1)
-      j=$(wc -c "$2/$f" | cut -d' ' -f1)
-
-      if [ $i -eq $j ]; then
-        echo "Linking $2/$f"
-        ln -sf "$2/$f" "$f"
-      fi
-
-    fi
-
-  done
-
-  popd > /dev/null
-}
-
 ARCHIVE="R-$R_VERSION-binaries-$BUILD_NO.tar.gz"
 DEBOOTSTRAP_VER=1.0.59
 FAKECHROOT_VER=2.18
@@ -121,9 +84,8 @@ popd > /dev/null
 #======================================================================
 topic 'Installing fakechroot'
 mkdir -p $FAKECHROOT_DIR
-git clone https://github.com/dex4er/fakechroot.git
+git clone -b "$FAKECHROOT_VER" --single-branch --depth 1 https://github.com/dex4er/fakechroot.git
 pushd fakechroot > /dev/null
-git checkout $FAKECHROOT_VER
 ./autogen.sh
 ./configure --prefix=$FAKECHROOT_DIR
 make
@@ -139,8 +101,8 @@ fakechroot fakeroot debootstrap --variant=fakechroot --arch=amd64 trusty $CHROOT
 topic 'Configuring Linux and installing R $R_VERSION'
 
 BASH_RC_FILE="$CHROOT_DIR/root/.bashrc"
+# uncomment line
 sed -i -e s/#force_color_prompt=yes/force_color_prompt=yes/ $BASH_RC_FILE
-echo "export PATH=$FAKECHROOT_DIR/sbin:$FAKECHROOT_DIR/bin:\$PATH" >> $BASH_RC_FILE
 
 # configure apt
 fakechroot fakeroot chroot $CHROOT_DIR \
@@ -168,6 +130,7 @@ fakechroot fakeroot chroot $CHROOT_DIR \
 fakechroot fakeroot chroot $CHROOT_DIR \
   apt-get update
 
+# prevent warnings about man-db when installing packages
 export LD_LIBRARY_PATH="/usr/lib/man-db:$LD_LIBRARY_PATH"
 
 fakechroot fakeroot chroot $CHROOT_DIR \
@@ -200,27 +163,5 @@ fakechroot fakeroot chroot $CHROOT_DIR \
 # check
 fakechroot fakeroot chroot $CHROOT_DIR \
   /usr/bin/R -e "capabilities()"
-
-# remove unneeded files to reduce slug size
-
-rm -rf $CHROOT_DIR/usr/share/doc
-rm -rf $CHROOT_DIR/usr/share/info
-rm -rf $CHROOT_DIR/usr/share/man
-rm -rf $CHROOT_DIR/var/lib/apt/lists/*
-
-###
-# these files are the same those in the "host", so convert to symlinks to save slug size
-##
-
-symlink_files $CHROOT_DIR/bin /bin
-symlink_files $CHROOT_DIR/lib /lib
-symlink_files $CHROOT_DIR/usr /usr
-
-#======================================================================
-topic 'Packaging R'
-
-tar czf R-$R_VERSION-binaries-$BUILD_NO.tar.gz .root .tools
-
-popd > /dev/null
 
 exit 0

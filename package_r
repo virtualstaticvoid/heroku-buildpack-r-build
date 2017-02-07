@@ -1,0 +1,150 @@
+#!/bin/bash
+
+# fail fast
+set -e
+
+# debug
+# set -x
+
+# for checking which version of the build script was used, output to STDOUT
+# so that it gets included in the build log output file
+echo "#======================================================================"
+echo "# $0"
+cat $0
+echo "#======================================================================"
+echo "# Environment"
+set
+echo "#======================================================================"
+
+R_VERSION="${1:-3.3.2}"
+BUILD_NO="${2:-`date +%Y%m%d-%H%M`}"
+STACK="${3:-cedar-14}"
+
+# check arguments
+if ([ -z "$R_VERSION" ] || [ -z "$BUILD_NO" ] || [ -z "$STACK" ]); then
+  echo
+  echo "USAGE: $0 VERSION [BUILD_NO] [STACK]"
+  echo
+  echo "  R_VERSION  Optionally, the R version for apt-get."
+  echo "                 Defaults to 3.3.1-1trusty0"
+  echo "                 Use \"apt-cache policy r-base\" to obtain valid versions."
+  echo
+  echo "  BUILD_NO       Optionally, the build number."
+  echo "                 Defaults to todays date and current time, in the form \"YYYYMMDD-HHMM\"."
+  echo
+  echo "  STACK          Optionally, the Heroku stack."
+  echo "                 Defaults to cedar-14"
+  echo
+  exit 1
+fi
+
+# helper functions
+function topic() {
+  echo "-----> $*"
+}
+
+function indent() {
+  c='s/^/       /'
+  case $(uname) in
+    Darwin) sed -l "$c";;
+    *)      sed -u "$c";;
+  esac
+}
+
+function symlink_files() {
+
+  # target $1 vs source $2
+  echo "Comparing $1 -> $2"
+
+  pushd "$1" > /dev/null
+  count=0
+
+  for f in *
+  do
+
+    # directory?
+    if [[ -d "$f" ]]; then
+
+      # skip symlinked directories
+      if [[ ! -L "$f" ]]; then
+        symlink_files "$1/$f" "$2/$f"
+      fi
+
+    # regular file, which exists in source directory?
+    elif [[ ! -L "$f" ]] && [[ -f "$2/$f" ]]; then
+
+      # get file sizes
+      i=$(wc -c "$f"    | cut -d' ' -f1)
+      j=$(wc -c "$2/$f" | cut -d' ' -f1)
+
+      if [ $i -eq $j ]; then
+        # echo "Linking $2/$f"
+        count=$((count+1))
+        ln -sf "$2/$f" "$f"
+      fi
+
+    fi
+
+  done
+
+  echo "Linked $count files"
+
+  popd > /dev/null
+}
+
+ARCHIVE="R-$R_VERSION-binaries-$BUILD_NO.tar.gz"
+SYMLINKS_VER=v1.4.3
+
+APP_DIR="/app"
+TOOLS_DIR="$APP_DIR/.tools"
+CHROOT_DIR="$APP_DIR/.root"
+DEBOOTSTRAP_BASE_DIR="$TOOLS_DIR/debootstrap"
+DEBOOTSTRAP_DIR="$DEBOOTSTRAP_BASE_DIR/usr/share/debootstrap"
+FAKECHROOT_DIR="$TOOLS_DIR/fakechroot"
+PATH="$DEBOOTSTRAP_BASE_DIR/usr/sbin:$FAKECHROOT_DIR/sbin:$FAKECHROOT_DIR/bin:$PATH"
+
+# export DEBIAN_FRONTEND=noninteractive
+# export TERM=linux
+export DEBOOTSTRAP_DIR
+export PATH
+
+pushd $APP_DIR > /dev/null
+
+#======================================================================
+topic 'Installing symlinks utility'
+git clone -b "$SYMLINKS_VER" --single-branch --depth 1 https://github.com/brandt/symlinks.git
+pushd symlinks > /dev/null
+make
+popd > /dev/null
+
+#======================================================================
+topic 'Packaging binaries'
+
+# remove unneeded files to reduce slug size
+
+rm -rf $CHROOT_DIR/usr/share/doc
+rm -rf $CHROOT_DIR/usr/share/info
+rm -rf $CHROOT_DIR/usr/share/man
+rm -rf $CHROOT_DIR/var/lib/apt/lists/*
+
+# convert all symlinks from absolute to relative to the /app/.root directory
+pushd $CHROOT_DIR > /dev/null
+/app/symlinks/symlinks -r -c bin etc lib lib64 opt run sbin usr var
+popd > /dev/null
+
+###
+# these files are the same those in the "host", so convert to symlinks to save slug size
+#  NOTE: will be absolute symlinks
+##
+
+symlink_files $CHROOT_DIR/bin /bin
+symlink_files $CHROOT_DIR/lib /lib
+symlink_files $CHROOT_DIR/usr /usr
+
+#======================================================================
+topic 'Compressing archive'
+
+tar czf R-$R_VERSION-binaries-$BUILD_NO.tar.gz .root .tools
+
+popd > /dev/null
+exit 0

@@ -12,6 +12,16 @@ set -e
 # debug
 # set -x
 
+# for checking which version of the build script was used, output to STDOUT
+# so that it gets included in the build log output file
+echo "#======================================================================"
+echo "# $0"
+cat $0
+echo "#======================================================================"
+echo "# Environment"
+set
+echo "#======================================================================"
+
 R_VERSION="${1:-3.3.2}"
 BUILD_NO="${2:-`date +%Y%m%d-%H%M`}"
 STACK="${3:-cedar-14}"
@@ -24,11 +34,27 @@ docker run -t \
   heroku/cedar:14 \
   /var/tmp/scripts/build_r $R_VERSION $BUILD_NO $STACK
 
+# commit for debugging
+docker commit "$R_VERSION-$BUILD_NO" "vsv/$R_VERSION-$BUILD_NO"
+
+# package up the binaries
+docker run -t \
+  -v $(pwd):/var/tmp/scripts \
+  --name "$R_VERSION-$BUILD_NO-PKG" \
+  "vsv/$R_VERSION-$BUILD_NO" \
+  /var/tmp/scripts/package_r $R_VERSION $BUILD_NO $STACK
+
 # get the binaries archive
-docker cp "$R_VERSION-$BUILD_NO:/app/R-$R_VERSION-binaries-$BUILD_NO.tar.gz" .
+docker cp "$R_VERSION-$BUILD_NO-PKG:/app/R-$R_VERSION-binaries-$BUILD_NO.tar.gz" .
 
 # upload to S3
 aws s3 cp $BUILDPACK_ARCHIVE \
   "s3://heroku-buildpack-r/$STACK/$BUILDPACK_ARCHIVE" \
   --acl=public-read \
   --profile=heroku-buildpack-r
+
+# clean up
+# comment these out when debugging
+docker rm "$R_VERSION-$BUILD_NO-PKG"
+docker rm "$R_VERSION-$BUILD_NO"
+docker rmi "vsv/$R_VERSION-$BUILD_NO"
