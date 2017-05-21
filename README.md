@@ -8,6 +8,7 @@ Scripts for building the R buildpack for Heroku
 * Configured AWS credentials as per [Standardized Way to Manage Credentials][2], using `heroku-buildpack-r` for the profile name
 * Docker
 * The [`heroku/cedar:14`][3] docker image
+* The [`heroku/heroku:16`][4] docker image
 * Heroku Account
 
 ## Usage
@@ -29,3 +30,4 @@ The `build_with_docker` script supports specifying the R version and optionally 
 [1]: https://github.com/virtualstaticvoid/heroku-buildpack-r
 [2]: https://aws.amazon.com/blogs/security/a-new-and-standardized-way-to-manage-credentials-in-the-aws-sdks/
 [3]: https://hub.docker.com/r/heroku/cedar/
+[4]: https://hub.docker.com/r/heroku/heroku/

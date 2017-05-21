@@ -1,4 +1,30 @@
 #!/bin/bash
 
-BUILDPACK_ARCHIVE=$1
-aws s3 cp $BUILDPACK_ARCHIVE "s3://heroku-buildpack-r/cedar-14/$BUILDPACK_ARCHIVE" --acl=public-read --profile=heroku-buildpack-r
+# fail fast
+set -e
+
+# debug
+# set -x
+
+BUILDPACK_ARCHIVE="$1"
+STACK="${2:-heroku-16}"
+
+# check arguments
+if ([ -z "$BUILDPACK_ARCHIVE" ] || [ -z "$STACK" ]); then
+  echo
+  echo "USAGE: $0 BUILDPACK_ARCHIVE [STACK]"
+  echo
+  echo "  BUILDPACK_ARCHIVE      The R binaries to upload to S3."
+  echo "                         E.g. R-3.4.0-binaries-YYYYMMDD-HHMM.tar.gz"
+  echo
+  echo "  BUILD_NO               Optionally, the Heroku stack."
+  echo "                         Defaults to heroku-16."
+  echo
+  exit 1
+fi
+
+# upload to S3
+aws s3 cp $BUILDPACK_ARCHIVE \
+  "s3://heroku-buildpack-r/$STACK/$BUILDPACK_ARCHIVE" \
+  --acl=public-read \
+  --profile=heroku-buildpack-r
