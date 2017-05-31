@@ -462,7 +462,6 @@
 /lib/systemd/system-generators/systemd-system-update-generator
 /lib/systemd/system-generators/systemd-sysv-generator
 /lib/systemd/system-preset/90-systemd.preset
-/lib/systemd/system/-.slice
 /lib/systemd/system/apt-daily.service
 /lib/systemd/system/apt-daily.timer
 /lib/systemd/system/basic.target
