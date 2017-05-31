@@ -48,14 +48,12 @@ function indent() {
 
 function symlink_files() {
 
-  # target $1 vs source $2
-  echo "Comparing $1 -> $2"
-
   pushd "$1" > /dev/null
-  count=0
 
   for f in *
   do
+
+    filename="$2/$f"
 
     # directory?
     if [[ -d "$f" ]]; then
@@ -66,23 +64,22 @@ function symlink_files() {
       fi
 
     # regular file, which exists in source directory?
-    elif [[ ! -L "$f" ]] && [[ -f "$2/$f" ]]; then
+    # and is included in the files available at runtime
+    # see https://devcenter.heroku.com/articles/stack-packages
+    elif [[ ! -L "$f" ]] && [[ -f "$2/$f" ]] && [ $(grep -x "${filename}." $SYMLINK_INCL) ]; then
 
       # get file sizes
       i=$(wc -c "$f"    | cut -d' ' -f1)
       j=$(wc -c "$2/$f" | cut -d' ' -f1)
 
       if [ $i -eq $j ]; then
-        # echo "Linking $2/$f"
-        count=$((count+1))
+        echo "Linking $2/$f"
         ln -sf "$2/$f" "$f"
       fi
 
     fi
 
   done
-
-  echo "Linked $count files"
 
   popd > /dev/null
 }
@@ -96,6 +93,7 @@ TOOLS_DIR="$APP_DIR/.tools"
 CHROOT_DIR="$APP_DIR/.root"
 FAKECHROOT_DIR="$TOOLS_DIR/fakechroot"
 PATH="$FAKECHROOT_DIR/sbin:$FAKECHROOT_DIR/bin:$PATH"
+SYMLINK_INCL="$(dirname $0)/files.txt"
 
 # export DEBIAN_FRONTEND=noninteractive
 # export TERM=linux
