@@ -66,7 +66,7 @@ function symlink_files() {
     # regular file, which exists in source directory?
     # and is included in the files available at runtime
     # see https://devcenter.heroku.com/articles/stack-packages
-    elif [[ ! -L "$f" ]] && [[ -f "$2/$f" ]] && [ $(grep -x "${filename}." $SYMLINK_INCL) ]; then
+    elif [[ ! -L "$f" ]] && [[ -f "$2/$f" ]] && [[ $(grep -x -F "$filename" $SYMLINK_INCL) ]]; then
 
       # get file sizes
       i=$(wc -c "$f"    | cut -d' ' -f1)
