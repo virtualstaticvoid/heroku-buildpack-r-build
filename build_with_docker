@@ -70,7 +70,8 @@ docker cp "$R_VERSION-$BUILD_NO-PKG:/app/$BUILDPACK_ARCHIVE" .
 aws s3 cp $BUILDPACK_ARCHIVE \
   "s3://heroku-buildpack-r/$STACK/$BUILDPACK_ARCHIVE" \
   --acl=public-read \
-  --profile=heroku-buildpack-r
+  --profile=heroku-buildpack-r \
+  --quiet
 
 # clean up
 docker rm "$R_VERSION-$BUILD_NO-PKG"
