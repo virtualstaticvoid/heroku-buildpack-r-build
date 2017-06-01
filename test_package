@@ -10,7 +10,7 @@ R_VERSION="$1"
 BUILD_NO="$2"
 STACK="$3"
 
-ARCHIVE="R-$R_VERSION-binaries-$BUILD_NO-prebuild.tar.gz"
+ARCHIVE="R-$R_VERSION-binaries-$BUILD_NO.tar.gz"
 APP_DIR="/app"
 CHROOT_DIR="$APP_DIR/.root"
 TOOLS_DIR="$APP_DIR/.tools"

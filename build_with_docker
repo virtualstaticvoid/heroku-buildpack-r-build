@@ -47,6 +47,9 @@ echo "# Environment"
 set
 echo "#======================================================================"
 
+#======================================================================
+echo 'Building image'
+
 # build the image
 docker build \
   --build-arg R_VERSION="$R_VERSION" \
@@ -56,11 +59,17 @@ docker build \
   --tag $TAG \
   .
 
+#======================================================================
+echo 'Checking image'
+
 # check if R installed okay
 docker run -t \
   --rm \
   "$TAG" \
   fakechroot fakeroot chroot /app/.root /usr/bin/R -e "capabilities()"
+
+#======================================================================
+echo 'Extracting archive'
 
 # create unoptimized archive of /app
 docker run -t \
@@ -68,6 +77,9 @@ docker run -t \
   --rm \
   "$TAG" \
   /var/tmp/create_archive $R_VERSION $BUILD_NO $STACK
+
+#======================================================================
+echo 'Optimizing archive size'
 
 # create optimized archive of /app
 # use the clean base image to ensure runtime dependencies match
@@ -77,12 +89,18 @@ docker run -t \
   heroku/heroku:16 \
   /var/tmp/create_package $R_VERSION $BUILD_NO $STACK
 
+#======================================================================
+echo 'Testing archive'
+
 # test
 docker run -t \
   -v $(pwd):/var/tmp \
   --rm \
   heroku/heroku:16 \
   /var/tmp/test_package $R_VERSION $BUILD_NO $STACK
+
+#======================================================================
+echo 'Uploading archive'
 
 # upload to S3
 aws s3 cp $BUILDPACK_ARCHIVE \

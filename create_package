@@ -76,7 +76,7 @@ pushd $CHROOT_DIR > /dev/null
 popd > /dev/null
 
 #======================================================================
-echo 'Optimizing'
+echo 'Optimizing size'
 
 # symlink matching files within the chroot directories to those on the "host"
 # in order to reduce the size of the archive
@@ -86,7 +86,7 @@ symlink_files $CHROOT_DIR/lib /lib
 symlink_files $CHROOT_DIR/usr /usr
 
 #======================================================================
-echo 'Packaging binaries'
+echo 'Packaging archive'
 
 # NOTE: /var/tmp is mounted by docker
 tar czf /var/tmp/R-$R_VERSION-binaries-$BUILD_NO.tar.gz .root .tools
