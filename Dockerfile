@@ -62,6 +62,14 @@ RUN fakechroot fakeroot chroot $CHROOT_DIR \
  && fakechroot fakeroot chroot $CHROOT_DIR \
      /bin/sh -c 'echo "deb http://cran.rstudio.com/bin/linux/ubuntu xenial/" >> /etc/apt/sources.list' \
 
+ # postresql key
+ && fakechroot fakeroot chroot $CHROOT_DIR \
+     gpg --keyserver keyserver.ubuntu.com --recv-key ACCC4CF8 \
+
+ && fakechroot fakeroot chroot $CHROOT_DIR \
+     /bin/sh -c 'gpg --export ACCC4CF8 > /var/tmp/ACCC4CF8 && apt-key add /var/tmp/ACCC4CF8 && rm /var/tmp/ACCC4CF8' \
+
+ # cran key
  && fakechroot fakeroot chroot $CHROOT_DIR \
      gpg --keyserver keyserver.ubuntu.com --recv-key E084DAB9 \
 
@@ -69,7 +77,10 @@ RUN fakechroot fakeroot chroot $CHROOT_DIR \
      /bin/sh -c 'gpg --export E084DAB9 > /var/tmp/E084DAB9 && apt-key add /var/tmp/E084DAB9 && rm /var/tmp/E084DAB9' \
 
  && fakechroot fakeroot chroot $CHROOT_DIR \
-     apt-get -q update
+     apt-get -q update \
+
+ && fakechroot fakeroot chroot $CHROOT_DIR \
+     apt-get -qy upgrade
 
 # install dependencies and R
 RUN fakechroot fakeroot chroot $CHROOT_DIR \

@@ -15,6 +15,10 @@ ARCHIVE="R-$R_VERSION-binaries-$BUILD_NO.tar.gz"
 APP_DIR="/app"
 CHROOT_DIR="$APP_DIR/.root"
 
+function topic() {
+  echo "-----> $*"
+}
+
 function symlink_files() {
 
   pushd "$1" > /dev/null
@@ -55,7 +59,7 @@ mkdir -p $APP_DIR
 pushd $APP_DIR > /dev/null
 
 #======================================================================
-echo 'Preparing directory'
+topic 'Preparing directory'
 
 # NOTE: /var/tmp is mounted by docker
 tar xzf "/var/tmp/$PREARCHIVE"
@@ -67,7 +71,7 @@ rm -rf $CHROOT_DIR/usr/share/man
 rm -rf $CHROOT_DIR/var/lib/apt/lists/*
 
 #======================================================================
-echo 'Converting relative symlinks'
+topic 'Converting relative symlinks'
 
 # convert all symlinks from absolute to relative to the /app/.root directory
 pushd $CHROOT_DIR > /dev/null
@@ -76,7 +80,7 @@ pushd $CHROOT_DIR > /dev/null
 popd > /dev/null
 
 #======================================================================
-echo 'Optimizing size'
+topic 'Optimizing size'
 
 # symlink matching files within the chroot directories to those on the "host"
 # in order to reduce the size of the archive
@@ -86,7 +90,7 @@ symlink_files $CHROOT_DIR/lib /lib
 symlink_files $CHROOT_DIR/usr /usr
 
 #======================================================================
-echo 'Packaging archive'
+topic 'Packaging archive'
 
 # NOTE: /var/tmp is mounted by docker
 tar czf /var/tmp/R-$R_VERSION-binaries-$BUILD_NO.tar.gz .root .tools

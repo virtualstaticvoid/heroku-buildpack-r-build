@@ -29,6 +29,10 @@ if ([ -z "$R_VERSION" ] || [ -z "$BUILD_NO" ]); then
   exit 1
 fi
 
+function topic() {
+  echo "=====> $*"
+}
+
 STACK="heroku-16"
 BUILDPACK_ARCHIVE="R-$R_VERSION-binaries-$BUILD_NO.tar.gz"
 BUILDPACK_ARCHIVE_LATEST="R-$R_VERSION-binaries-latest.tar.gz"
@@ -48,7 +52,7 @@ set
 echo "#======================================================================"
 
 #======================================================================
-echo 'Building image'
+topic 'Building image'
 
 # build the image
 docker build \
@@ -60,7 +64,7 @@ docker build \
   .
 
 #======================================================================
-echo 'Checking image'
+topic 'Checking image'
 
 # check if R installed okay
 docker run -t \
@@ -69,7 +73,7 @@ docker run -t \
   fakechroot fakeroot chroot /app/.root /usr/bin/R -e "capabilities()"
 
 #======================================================================
-echo 'Extracting archive'
+topic 'Extracting archive'
 
 # create unoptimized archive of /app
 docker run -t \
@@ -79,7 +83,7 @@ docker run -t \
   /var/tmp/create_archive $R_VERSION $BUILD_NO $STACK
 
 #======================================================================
-echo 'Optimizing archive size'
+topic 'Optimizing archive size'
 
 # create optimized archive of /app
 # use the clean base image to ensure runtime dependencies match
@@ -90,7 +94,7 @@ docker run -t \
   /var/tmp/create_package $R_VERSION $BUILD_NO $STACK
 
 #======================================================================
-echo 'Testing archive'
+topic 'Testing archive'
 
 # test
 docker run -t \
@@ -100,7 +104,7 @@ docker run -t \
   /var/tmp/test_package $R_VERSION $BUILD_NO $STACK
 
 #======================================================================
-echo 'Uploading archive'
+topic 'Uploading archive'
 
 # upload to S3
 aws s3 cp $BUILDPACK_ARCHIVE \
