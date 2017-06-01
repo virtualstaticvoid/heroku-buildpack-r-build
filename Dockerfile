@@ -48,16 +48,16 @@ RUN sed -i -e s/#force_color_prompt=yes/force_color_prompt=yes/ $BASH_RC_FILE
 
 # configure apt for R packages
 RUN fakechroot fakeroot chroot $CHROOT_DIR \
-  /bin/sh -c 'echo "deb http://archive.ubuntu.com/ubuntu xenial main" > /etc/apt/sources.list' \
+     /bin/sh -c 'echo "deb http://archive.ubuntu.com/ubuntu xenial main universe" > /etc/apt/sources.list' \
 
  && fakechroot fakeroot chroot $CHROOT_DIR \
-     /bin/sh -c 'echo "deb http://archive.ubuntu.com/ubuntu xenial-updates main" >> /etc/apt/sources.list' \
+     /bin/sh -c 'echo "deb http://archive.ubuntu.com/ubuntu xenial-security main universe" >> /etc/apt/sources.list' \
 
  && fakechroot fakeroot chroot $CHROOT_DIR \
-     /bin/sh -c 'echo "deb http://archive.ubuntu.com/ubuntu xenial universe" >> /etc/apt/sources.list' \
+     /bin/sh -c 'echo "deb http://archive.ubuntu.com/ubuntu xenial-updates main universe" >> /etc/apt/sources.list' \
 
  && fakechroot fakeroot chroot $CHROOT_DIR \
-     /bin/sh -c 'echo "deb http://archive.ubuntu.com/ubuntu xenial-updates universe" >> /etc/apt/sources.list' \
+     /bin/sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt/ xenial-pgdg main" >> /etc/apt/sources.list' \
 
  && fakechroot fakeroot chroot $CHROOT_DIR \
      /bin/sh -c 'echo "deb http://cran.rstudio.com/bin/linux/ubuntu xenial/" >> /etc/apt/sources.list' \
