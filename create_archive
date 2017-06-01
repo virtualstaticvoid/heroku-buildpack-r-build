@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# fail fast
+set -e
+
+# debug
+# set -x
+
+R_VERSION="$1"
+BUILD_NO="$2"
+STACK="$3"
+
+ARCHIVE="R-$R_VERSION-binaries-$BUILD_NO.tar.gz"
+APP_DIR="/app"
+
+pushd $APP_DIR > /dev/null
+
+#======================================================================
+echo 'Packaging binaries'
+
+# NOTE: /var/tmp is mounted by docker
+tar czf /var/tmp/R-$R_VERSION-binaries-$BUILD_NO-prebuild.tar.gz .root .tools
+
+popd > /dev/null
+exit 0

@@ -56,15 +56,33 @@ docker build \
   --tag $TAG \
   .
 
-# package up the binaries
+# check if R installed okay
 docker run -t \
-  -v $(pwd):/var/tmp/scripts \
-  --name "$R_VERSION-$BUILD_NO-PKG" \
+  --rm \
   "$TAG" \
-  /var/tmp/scripts/package_r $R_VERSION $BUILD_NO $STACK
+  fakechroot fakeroot chroot /app/.root /usr/bin/R -e "capabilities()"
 
-# get the binaries archive
-docker cp "$R_VERSION-$BUILD_NO-PKG:/app/$BUILDPACK_ARCHIVE" .
+# create unoptimized archive of /app
+docker run -t \
+  -v $(pwd):/var/tmp \
+  --rm \
+  "$TAG" \
+  /var/tmp/create_archive $R_VERSION $BUILD_NO $STACK
+
+# create optimized archive of /app
+# use the clean base image to ensure runtime dependencies match
+docker run -t \
+  -v $(pwd):/var/tmp \
+  --rm \
+  heroku/heroku:16 \
+  /var/tmp/create_package $R_VERSION $BUILD_NO $STACK
+
+# test
+docker run -t \
+  -v $(pwd):/var/tmp \
+  --rm \
+  heroku/heroku:16 \
+  /var/tmp/test_package $R_VERSION $BUILD_NO $STACK
 
 # upload to S3
 aws s3 cp $BUILDPACK_ARCHIVE \
@@ -72,9 +90,6 @@ aws s3 cp $BUILDPACK_ARCHIVE \
   --acl=public-read \
   --profile=heroku-buildpack-r \
   --quiet
-
-# clean up
-docker rm "$R_VERSION-$BUILD_NO-PKG"
 
 echo
 echo "After testing the build, make it current by running the following:"

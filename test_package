@@ -1,0 +1,40 @@
+#!/bin/bash
+
+# fail fast
+set -e
+
+# debug
+# set -x
+
+R_VERSION="$1"
+BUILD_NO="$2"
+STACK="$3"
+
+ARCHIVE="R-$R_VERSION-binaries-$BUILD_NO-prebuild.tar.gz"
+APP_DIR="/app"
+CHROOT_DIR="$APP_DIR/.root"
+TOOLS_DIR="$APP_DIR/.tools"
+FAKEROOT_DIR="$TOOLS_DIR/fakeroot"
+FAKECHROOT_DIR="$TOOLS_DIR/fakechroot"
+export PATH="$FAKEROOT_DIR/bin:$FAKECHROOT_DIR/sbin:$FAKECHROOT_DIR/bin:./bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH"
+
+mkdir -p $APP_DIR
+pushd $APP_DIR > /dev/null
+
+#======================================================================
+echo 'Preparing directory'
+
+# NOTE: /var/tmp is mounted by docker
+tar xzf "/var/tmp/$ARCHIVE"
+
+# R?
+fakechroot fakeroot chroot $CHROOT_DIR /usr/bin/R -e "capabilities()"
+
+# apt-get?
+fakechroot fakeroot chroot $CHROOT_DIR /usr/bin/apt-get update
+fakechroot fakeroot chroot $CHROOT_DIR /usr/bin/apt-get install -y libpq-dev
+
+# ...
+
+popd > /dev/null
+exit 0

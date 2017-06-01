@@ -1,0 +1,95 @@
+#!/bin/bash
+
+# fail fast
+set -e
+
+# debug
+# set -x
+
+R_VERSION="$1"
+BUILD_NO="$2"
+STACK="$3"
+
+PREARCHIVE="R-$R_VERSION-binaries-$BUILD_NO-prebuild.tar.gz"
+ARCHIVE="R-$R_VERSION-binaries-$BUILD_NO.tar.gz"
+APP_DIR="/app"
+CHROOT_DIR="$APP_DIR/.root"
+
+function symlink_files() {
+
+  pushd "$1" > /dev/null
+
+  for f in *
+  do
+
+    filename="$2/$f"
+
+    # directory?
+    if [[ -d "$f" ]]; then
+
+      # skip symlinked directories
+      if [[ ! -L "$f" ]]; then
+        symlink_files "$1/$f" "$2/$f"
+      fi
+
+    # regular file, which exists in source directory?
+    elif [[ ! -L "$f" ]] && [[ -f "$2/$f" ]]; then
+
+      # get file sizes
+      i=$(wc -c "$f"    | cut -d' ' -f1)
+      j=$(wc -c "$2/$f" | cut -d' ' -f1)
+
+      if [ $i -eq $j ]; then
+        echo "Linking $2/$f"
+        ln -sf "$2/$f" "$f"
+      fi
+
+    fi
+
+  done
+
+  popd > /dev/null
+}
+
+mkdir -p $APP_DIR
+pushd $APP_DIR > /dev/null
+
+#======================================================================
+echo 'Preparing directory'
+
+# NOTE: /var/tmp is mounted by docker
+tar xzf "/var/tmp/$PREARCHIVE"
+
+# remove unneeded files to reduce slug size
+rm -rf $CHROOT_DIR/usr/share/doc
+rm -rf $CHROOT_DIR/usr/share/info
+rm -rf $CHROOT_DIR/usr/share/man
+rm -rf $CHROOT_DIR/var/lib/apt/lists/*
+
+#======================================================================
+echo 'Converting relative symlinks'
+
+# convert all symlinks from absolute to relative to the /app/.root directory
+pushd $CHROOT_DIR > /dev/null
+# NOTE: /var/tmp is mounted by docker
+/var/tmp/symlinks -r -c bin etc lib lib64 opt run sbin usr var
+popd > /dev/null
+
+#======================================================================
+echo 'Optimizing'
+
+# symlink matching files within the chroot directories to those on the "host"
+# in order to reduce the size of the archive
+symlink_files $CHROOT_DIR/bin /bin
+symlink_files $CHROOT_DIR/bin /sbin
+symlink_files $CHROOT_DIR/lib /lib
+symlink_files $CHROOT_DIR/usr /usr
+
+#======================================================================
+echo 'Packaging binaries'
+
+# NOTE: /var/tmp is mounted by docker
+tar czf /var/tmp/R-$R_VERSION-binaries-$BUILD_NO.tar.gz .root .tools
+
+popd > /dev/null
+exit 0

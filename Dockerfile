@@ -92,7 +92,3 @@ RUN fakechroot fakeroot chroot $CHROOT_DIR \
 # install shiny (as it's the most used on Heroku)
 RUN fakechroot fakeroot chroot $CHROOT_DIR \
   /usr/bin/R -e "install.packages('shiny', repos='http://cran.rstudio.com/')"
-
-# check
-RUN fakechroot fakeroot chroot $CHROOT_DIR \
-  /usr/bin/R -e "capabilities()"
