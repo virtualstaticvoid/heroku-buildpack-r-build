@@ -62,7 +62,7 @@ RUN fakechroot fakeroot chroot $CHROOT_DIR \
  && fakechroot fakeroot chroot $CHROOT_DIR \
      /bin/sh -c 'echo "deb http://cran.rstudio.com/bin/linux/ubuntu xenial/" >> /etc/apt/sources.list' \
 
- # postresql key
+ # postgresql key
  && fakechroot fakeroot chroot $CHROOT_DIR \
      gpg --keyserver keyserver.ubuntu.com --recv-key ACCC4CF8 \
 
@@ -91,10 +91,25 @@ RUN fakechroot fakeroot chroot $CHROOT_DIR \
     libcurl4-openssl-dev \
     libgsl0-dev \
     libssl-dev \
+    libxml2-dev \
     libxt-dev \
+    openjdk-8-jre-headless \
+    openjdk-8-jdk-headless \
     pkg-config \
     r-base-dev=${R_VERSION}* \
     r-recommended=${R_VERSION}*
+
+# configure Java in R
+# see https://github.com/hannarud/r-best-practices/wiki/Installing-RJava-(Ubuntu)
+
+# hacks: need to patch the javareconf program
+# by commenting out the line which clears LD_LIBRARY_PATH
+# since it causes the fakechroot to fail
+RUN fakechroot fakeroot chroot $CHROOT_DIR \
+  /bin/sh -c 'sed -i "s/^\s*LD_LIBRARY_PATH=$/#LD_LIBRARY_PATH=/g" /usr/lib/R/bin/javareconf'
+
+RUN fakechroot fakeroot chroot $CHROOT_DIR \
+  R CMD javareconf
 
 # install pandoc
 RUN fakechroot fakeroot chroot $CHROOT_DIR \
