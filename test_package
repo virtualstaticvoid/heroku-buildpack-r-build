@@ -38,8 +38,8 @@ topic 'Testing'
 fakechroot fakeroot chroot $CHROOT_DIR /usr/bin/R -e "capabilities()"
 
 # apt-get?
-fakechroot fakeroot chroot $CHROOT_DIR /usr/bin/apt-get update
-fakechroot fakeroot chroot $CHROOT_DIR /usr/bin/apt-get install -y libpq-dev
+fakechroot fakeroot chroot $CHROOT_DIR /usr/bin/apt-get update -q
+fakechroot fakeroot chroot $CHROOT_DIR /usr/bin/apt-get install -yq libpq-dev
 
 # ...
 
