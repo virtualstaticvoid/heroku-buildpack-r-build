@@ -102,13 +102,7 @@ RUN fakechroot fakeroot chroot $CHROOT_DIR \
 # configure Java in R
 # see https://github.com/hannarud/r-best-practices/wiki/Installing-RJava-(Ubuntu)
 
-# hacks: need to patch the javareconf program
-# by commenting out the line which clears LD_LIBRARY_PATH
-# since it causes the fakechroot to fail
-RUN fakechroot fakeroot chroot $CHROOT_DIR \
-  /bin/sh -c 'sed -i "s/^\s*LD_LIBRARY_PATH=$/#LD_LIBRARY_PATH=/g" /usr/lib/R/bin/javareconf'
-
-# hacks: symlink libjvm.so since LD_LIBRARY_PATH is meddled with elsewhere
+# hack: symlink libjvm.so since LD_LIBRARY_PATH is meddled with in javareconf
 RUN fakechroot fakeroot chroot $CHROOT_DIR \
   ln -s /usr/lib/jvm/default-java/jre/lib/amd64/server/libjvm.so /lib/libjvm.so
 
