@@ -93,8 +93,8 @@ RUN fakechroot fakeroot chroot $CHROOT_DIR \
     libssl-dev \
     libxml2-dev \
     libxt-dev \
-    openjdk-8-jre-headless \
     openjdk-8-jdk-headless \
+    default-jdk \
     pkg-config \
     r-base-dev=${R_VERSION}* \
     r-recommended=${R_VERSION}*
@@ -108,6 +108,10 @@ RUN fakechroot fakeroot chroot $CHROOT_DIR \
 RUN fakechroot fakeroot chroot $CHROOT_DIR \
   /bin/sh -c 'sed -i "s/^\s*LD_LIBRARY_PATH=$/#LD_LIBRARY_PATH=/g" /usr/lib/R/bin/javareconf'
 
+# hacks: symlink libjvm.so since LD_LIBRARY_PATH is meddled with elsewhere
+RUN fakechroot fakeroot chroot $CHROOT_DIR \
+  ln -s /usr/lib/jvm/default-java/jre/lib/amd64/server/libjvm.so /lib/libjvm.so
+
 RUN fakechroot fakeroot chroot $CHROOT_DIR \
   R CMD javareconf
 
@@ -118,3 +122,6 @@ RUN fakechroot fakeroot chroot $CHROOT_DIR \
 # install shiny (as it's the most used on Heroku)
 RUN fakechroot fakeroot chroot $CHROOT_DIR \
   /usr/bin/R -e "install.packages('shiny', repos='http://cran.rstudio.com/')"
+
+RUN fakechroot fakeroot chroot $CHROOT_DIR \
+  /usr/bin/R -e "install.packages('rJava', repos='http://cran.rstudio.com/')"
