@@ -94,6 +94,7 @@ RUN fakechroot fakeroot chroot $CHROOT_DIR \
     libxml2-dev \
     libxt-dev \
     pkg-config \
+    software-properties-common \
     r-base-dev=${R_VERSION}* \
     r-recommended=${R_VERSION}*
 
