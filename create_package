@@ -65,10 +65,14 @@ topic 'Preparing directory'
 tar xzf "/var/tmp/$PREARCHIVE"
 
 # remove unneeded files to reduce slug size
+rm -rf $CHROOT_DIR/tmp/*.rds
+rm -rf $CHROOT_DIR/tmp/downloaded_packages/*
 rm -rf $CHROOT_DIR/usr/share/doc
 rm -rf $CHROOT_DIR/usr/share/info
 rm -rf $CHROOT_DIR/usr/share/man
+rm -rf $CHROOT_DIR/var/cache/apt/*
 rm -rf $CHROOT_DIR/var/lib/apt/lists/*
+rm -rf $CHROOT_DIR/var/lib/dpkg/*-old
 
 #======================================================================
 topic 'Converting relative symlinks'
