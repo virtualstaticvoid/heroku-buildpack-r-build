@@ -54,6 +54,10 @@ echo "#======================================================================"
 #======================================================================
 topic 'Building image'
 
+# ensure latest heroku images
+docker pull heroku/heroku:16
+docker pull heroku/heroku:16-build
+
 # build the image
 docker build \
   --build-arg R_VERSION="$R_VERSION" \
