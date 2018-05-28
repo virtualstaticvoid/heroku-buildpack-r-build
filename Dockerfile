@@ -62,7 +62,7 @@ RUN fakechroot fakeroot chroot $CHROOT_DIR \
  && fakechroot fakeroot chroot $CHROOT_DIR \
      /bin/sh -c 'echo "deb http://cran.rstudio.com/bin/linux/ubuntu xenial/" >> /etc/apt/sources.list' \
 
- # postresql key
+ # postgres key
  && fakechroot fakeroot chroot $CHROOT_DIR \
      gpg --keyserver keyserver.ubuntu.com --recv-key ACCC4CF8 \
 
@@ -91,6 +91,7 @@ RUN fakechroot fakeroot chroot $CHROOT_DIR \
     libcurl4-openssl-dev \
     libgsl0-dev \
     libssl-dev \
+    libxml2-dev \
     libxt-dev \
     pkg-config \
     r-base-dev=${R_VERSION}* \
