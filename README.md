@@ -1,6 +1,6 @@
 # Building the R binaries for the [heroku-buildpack-r][1] buildpack
 
-*NOTE: This branch is DEPRECATED. Please use the [chroot](https://github.com/virtualstaticvoid/heroku-buildpack-r-build/tree/chroot) branch.*
+*NOTE: This repository is NO LONGER SUPPORTED. Please use [heroku-buildpack-r-build2](https://github.com/virtualstaticvoid/heroku-buildpack-r-build2) instead.*
 
 The binaries for the build pack can be built using an Heroku application.
 
