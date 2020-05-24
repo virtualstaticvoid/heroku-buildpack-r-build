@@ -1,5 +1,7 @@
 # Building the R binaries for the [heroku-buildpack-r][1] buildpack
 
+*NOTE: This repository is NO LONGER SUPPORTED. Please use [heroku-buildpack-r-build2](https://github.com/virtualstaticvoid/heroku-buildpack-r-build2) instead.*
+
 Scripts for building the R buildpack for Heroku
 
 ## Prerequisites
